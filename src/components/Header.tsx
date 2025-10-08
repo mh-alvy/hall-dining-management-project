@@ -34,15 +34,13 @@ const Header: React.FC<HeaderProps> = ({ onViewChange, currentView }) => {
         { id: 'billing', label: 'Billing' }
       ];
 
-  const handleLogout = () => {
-    dispatch({ type: 'LOGOUT' });
+  const { logout } = useApp();
+
+  const handleLogout = async () => {
+    await logout();
   };
 
-  const currentUserName = state.userRole === 'admin'
-    ? state.currentAdmin?.name
-    : state.userRole === 'manager' 
-    ? state.currentManager?.name 
-    : state.currentUser?.name;
+  const currentUserName = state.user?.full_name || 'User';
   return (
     <header className="bg-white shadow-lg border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

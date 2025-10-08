@@ -1,13 +1,13 @@
 import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
 import type { AuthUser } from '../lib/auth';
-import { getCurrentUser, signOut as authSignOut } from '../lib/auth';
+import { getCurrentUser, signOut } from '../lib/auth';
 import { supabase } from '../lib/supabase';
 
-interface AppState {
+export interface AppState {
   user: AuthUser | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  userRole: 'student' | 'manager' | 'admin' | null;
+  primaryRole: 'student' | 'manager' | 'admin' | null;
 }
 
 type AppAction =
@@ -20,7 +20,7 @@ const initialState: AppState = {
   user: null,
   isAuthenticated: false,
   isLoading: true,
-  userRole: null
+  primaryRole: null
 };
 
 function getPrimaryRole(roles: Array<'student' | 'manager' | 'admin'>): 'student' | 'manager' | 'admin' | null {
@@ -44,7 +44,7 @@ const appReducer = (state: AppState, action: AppAction): AppState => {
         ...state,
         user: action.payload,
         isAuthenticated: !!action.payload,
-        userRole: action.payload ? getPrimaryRole(action.payload.roles) : null,
+        primaryRole: action.payload ? getPrimaryRole(action.payload.roles) : null,
         isLoading: false
       };
 
@@ -65,7 +65,7 @@ const AppContext = createContext<{
   logout: () => Promise<void>;
 } | null>(null);
 
-export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export const SupabaseAppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [state, dispatch] = useReducer(appReducer, initialState);
 
   useEffect(() => {
@@ -73,7 +73,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event) => {
       if (event === 'SIGNED_IN') {
-        await loadUserData();
+        const { user } = await getCurrentUser();
+        dispatch({ type: 'SET_USER', payload: user });
       } else if (event === 'SIGNED_OUT') {
         dispatch({ type: 'LOGOUT' });
       }
@@ -94,13 +95,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
   }
 
-  async function loadUserData() {
-    const { user } = await getCurrentUser();
-    dispatch({ type: 'SET_USER', payload: user });
-  }
-
   async function logout() {
-    await authSignOut();
+    await signOut();
     dispatch({ type: 'LOGOUT' });
   }
 
@@ -111,10 +107,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   );
 };
 
-export const useApp = () => {
+export const useSupabaseApp = () => {
   const context = useContext(AppContext);
   if (!context) {
-    throw new Error('useApp must be used within AppProvider');
+    throw new Error('useSupabaseApp must be used within SupabaseAppProvider');
   }
   return context;
 };

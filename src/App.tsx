@@ -13,13 +13,19 @@ import PaymentGateway from './components/PaymentGateway';
 import Billing from './components/Billing';
 import DiningMonthManager from './components/DiningMonthManager';
 import CancellationApproval from './components/CancellationApproval';
+import DatabaseSeeder from './components/DatabaseSeeder';
 
 const AppContent: React.FC = () => {
   const { state } = useApp();
   const [currentView, setCurrentView] = useState('dashboard');
 
   if (!state.isAuthenticated) {
-    return <Login />;
+    return (
+      <>
+        <DatabaseSeeder />
+        <Login />
+      </>
+    );
   }
 
   const renderView = () => {

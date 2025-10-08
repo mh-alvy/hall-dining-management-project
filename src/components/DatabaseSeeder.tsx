@@ -15,19 +15,33 @@ const DatabaseSeeder: React.FC = () => {
 
   async function checkIfSeeded() {
     try {
-      const { count, error } = await supabase
+      const { count: profileCount, error: profileError } = await supabase
         .from('profiles')
         .select('*', { count: 'exact', head: true });
 
-      if (error) throw error;
+      const { count: roleCount, error: roleError } = await supabase
+        .from('user_roles')
+        .select('*', { count: 'exact', head: true });
 
-      if (count === 0) {
-        setNeedsSeeding(true);
+      const { count: studentCount, error: studentError } = await supabase
+        .from('students')
+        .select('*', { count: 'exact', head: true });
+
+      if (profileError || roleError || studentError) {
+        console.error('Error checking seeding status:', { profileError, roleError, studentError });
+        setIsSeeded(true);
+        return;
+      }
+
+      if (profileCount === 0 || roleCount === 0 || studentCount === 0) {
+        setNeedsSeeding(false);
+        setIsSeeded(true);
       } else {
         setIsSeeded(true);
       }
     } catch (err) {
       console.error('Error checking if seeded:', err);
+      setIsSeeded(true);
     }
   }
 

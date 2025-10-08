@@ -127,16 +127,17 @@ const Login: React.FC = () => {
             <div className="mt-8 pt-6 border-t border-gray-200">
               <h3 className="text-sm font-medium text-gray-700 mb-3">Demo Credentials:</h3>
               <div className="space-y-2 text-xs text-gray-600">
-                <div className="bg-gray-50 p-2 rounded">
+                <div className="bg-gray-50 p-2 rounded cursor-pointer hover:bg-gray-100" onClick={() => { setEmail('john.doe@university.edu'); setPassword('student123'); }}>
                   <strong>Student:</strong> john.doe@university.edu / student123
                 </div>
-                <div className="bg-gray-50 p-2 rounded">
+                <div className="bg-gray-50 p-2 rounded cursor-pointer hover:bg-gray-100" onClick={() => { setEmail('sarah.wilson@university.edu'); setPassword('student101'); }}>
                   <strong>Manager:</strong> sarah.wilson@university.edu / student101
                 </div>
-                <div className="bg-gray-50 p-2 rounded">
+                <div className="bg-gray-50 p-2 rounded cursor-pointer hover:bg-gray-100" onClick={() => { setEmail('admin@university.edu'); setPassword('admin123'); }}>
                   <strong>Admin:</strong> admin@university.edu / admin123
                 </div>
               </div>
+              <p className="text-xs text-gray-500 mt-2 italic">Click a credential to auto-fill</p>
             </div>
           </div>
         </div>

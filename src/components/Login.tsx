@@ -15,20 +15,27 @@ const Login: React.FC = () => {
     setIsLoading(true);
     setError('');
 
+    console.log('Attempting login with:', email);
+
     const { user, error: authError } = await signIn(email, password);
 
+    console.log('Login result:', { user, error: authError });
+
     if (authError) {
+      console.error('Login error:', authError);
       setError(authError.message || 'Invalid email or password');
       setIsLoading(false);
       return;
     }
 
     if (!user) {
+      console.error('No user returned');
       setError('No user found');
       setIsLoading(false);
       return;
     }
 
+    console.log('Login successful, dispatching:', user);
     dispatch({ type: 'LOGIN_SUCCESS', payload: user });
     setIsLoading(false);
   };

@@ -11,19 +11,25 @@ export interface AuthUser {
 
 export async function signIn(email: string, password: string): Promise<{ user: AuthUser | null; error: Error | null }> {
   try {
+    console.log('signIn: Starting authentication for:', email);
     const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
       email,
       password
     });
 
+    console.log('signIn: Auth response:', { user: authData?.user?.id, error: authError });
+
     if (authError) throw authError;
     if (!authData.user) throw new Error('No user returned');
 
+    console.log('signIn: Fetching profile...');
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('*')
       .eq('id', authData.user.id)
       .maybeSingle();
+
+    console.log('signIn: Profile:', { found: !!profile, error: profileError });
 
     if (profileError) throw profileError;
 
@@ -31,10 +37,13 @@ export async function signIn(email: string, password: string): Promise<{ user: A
       throw new Error('Profile not found. Please contact administrator.');
     }
 
+    console.log('signIn: Fetching roles...');
     const { data: roles, error: rolesError } = await supabase
       .from('user_roles')
       .select('role')
       .eq('user_id', authData.user.id);
+
+    console.log('signIn: Roles:', { count: roles?.length, error: rolesError });
 
     if (rolesError) throw rolesError;
 
@@ -51,8 +60,10 @@ export async function signIn(email: string, password: string): Promise<{ user: A
       roles: roles.map(r => r.role)
     };
 
+    console.log('signIn: Success! User roles:', user.roles);
     return { user, error: null };
   } catch (error) {
+    console.error('signIn: Failed:', error);
     return { user: null, error: error as Error };
   }
 }

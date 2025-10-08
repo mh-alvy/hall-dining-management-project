@@ -23,9 +23,13 @@ export async function signIn(email: string, password: string): Promise<{ user: A
       .from('profiles')
       .select('*')
       .eq('id', authData.user.id)
-      .single();
+      .maybeSingle();
 
     if (profileError) throw profileError;
+
+    if (!profile) {
+      throw new Error('Profile not found. Please contact administrator.');
+    }
 
     const { data: roles, error: rolesError } = await supabase
       .from('user_roles')
@@ -33,6 +37,10 @@ export async function signIn(email: string, password: string): Promise<{ user: A
       .eq('user_id', authData.user.id);
 
     if (rolesError) throw rolesError;
+
+    if (!roles || roles.length === 0) {
+      throw new Error('No roles assigned. Please contact administrator.');
+    }
 
     const user: AuthUser = {
       id: profile.id,
@@ -70,9 +78,13 @@ export async function getCurrentUser(): Promise<{ user: AuthUser | null; error: 
       .from('profiles')
       .select('*')
       .eq('id', session.user.id)
-      .single();
+      .maybeSingle();
 
     if (profileError) throw profileError;
+
+    if (!profile) {
+      return { user: null, error: null };
+    }
 
     const { data: roles, error: rolesError } = await supabase
       .from('user_roles')
@@ -80,6 +92,10 @@ export async function getCurrentUser(): Promise<{ user: AuthUser | null; error: 
       .eq('user_id', session.user.id);
 
     if (rolesError) throw rolesError;
+
+    if (!roles || roles.length === 0) {
+      return { user: null, error: null };
+    }
 
     const user: AuthUser = {
       id: profile.id,
